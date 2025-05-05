@@ -1,37 +1,41 @@
-'use client';
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addExpense } from '../../features/expenses/expensesSlice';
-import { Button, TextField, MenuItem } from '@mui/material';
+"use client";
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../../redux/store";
+import { deleteExpense } from "../../features/expenses/expensesSlice";
+import { List, ListItem, ListItemText, IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const categories = ['Food', 'Travel', 'Utilities', 'Other'];
-
-export default function ExpenseForm() {
+export default function ExpenseList() {
+  const expenses = useSelector((state: RootState) => state.expenses.items);
   const dispatch = useDispatch();
-  const [title, setTitle] = useState('');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('Food');
-  const [date, setDate] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch(addExpense({ title, amount: +amount, category, date }));
-    setTitle('');
-    setAmount('');
-    setDate('');
-  };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <TextField label="Title" value={title} onChange={e => setTitle(e.target.value)} fullWidth margin="normal" />
-      <TextField label="Amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} fullWidth margin="normal" />
-      <TextField select label="Category" value={category} onChange={e => setCategory(e.target.value)} fullWidth margin="normal">
-        {categories.map(cat => (
-          <MenuItem key={cat} value={cat}>{cat}</MenuItem>
-        ))}
-      </TextField>
-      <TextField label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} fullWidth margin="normal" InputLabelProps={{ shrink: true }} />
-      <Button type="submit" variant="contained" fullWidth> Add Expense </Button>
-    </form>
+    <List>
+      {expenses.map((expense) => (
+        <ListItem
+          key={expense.id}
+          secondaryAction={
+            <IconButton
+              edge="end"
+              onClick={() => dispatch(deleteExpense(expense.id))}
+            >
+              <DeleteIcon />
+            </IconButton>
+          }
+        >
+          <ListItemText
+            primary={expense.title}
+            secondary={`${expense.category} — $${expense.amount}`}
+          />
+        </ListItem>
+      ))}
+      {expenses.length === 0 && (
+        <>
+          <h1>No Expeses yet</h1>
+          <p className="font-light text-2xl">Start adding some</p>
+        </>
+      )}
+    </List>
   );
 }
